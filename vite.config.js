@@ -23,6 +23,7 @@ const copyJsonPlugin = () => {
 };
 
 export default defineConfig({
+  base: '',
   plugins: [
     // Plugin para copiar JSON durante o build
     copyJsonPlugin()
