@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index Librorum Prohibitorum</title>
+  </head>
+  <style>
+    #yearsNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+  </style>
+  <body>
+    <img src="index.png" alt="" srcset="">
+    <h1>Index Librorum Prohibitorum</h1>
+
+    <form id="searchForm">
+      <label for="searchInput">Search:</label>
+      <input type="text" id="searchInput" placeholder="Title, Author or Year" />
+      <button type="submit">Buscar</button>
+      <button type="button" id="clearButton">Limpar</button>
+    </form>
+
+    <div id="info">
+      <p>Total of records: <span id="totalCount">0</span></p>
+      <p>Records displayed: <span id="displayedCount">0</span></p>
+    </div>
+
+    <div>
+      <div id="alphabetNav">
+        <a href="#" data-letter="A">A</a>
+        <a href="#" data-letter="B">B</a>
+        <a href="#" data-letter="C">C</a>
+        <a href="#" data-letter="D">D</a>
+        <a href="#" data-letter="E">E</a>
+        <a href="#" data-letter="F">F</a>
+        <a href="#" data-letter="G">G</a>
+        <a href="#" data-letter="H">H</a>
+        <a href="#" data-letter="I">I</a>
+        <a href="#" data-letter="J">J</a>
+        <a href="#" data-letter="K">K</a>
+        <a href="#" data-letter="L">L</a>
+        <a href="#" data-letter="M">M</a>
+        <a href="#" data-letter="N">N</a>
+        <a href="#" data-letter="O">O</a>
+        <a href="#" data-letter="P">P</a>
+        <a href="#" data-letter="Q">Q</a>
+        <a href="#" data-letter="R">R</a>
+        <a href="#" data-letter="S">S</a>
+        <a href="#" data-letter="T">T</a>
+        <a href="#" data-letter="U">U</a>
+        <a href="#" data-letter="V">V</a>
+        <a href="#" data-letter="W">W</a>
+        <a href="#" data-letter="X">X</a>
+        <a href="#" data-letter="Y">Y</a>
+        <a href="#" data-letter="Z">Z</a>
+      </div>
+    </div>
+    <br />
+    <br />
+    <div>
+      <div id="yearsNav"></div>
+    </div>
+    <br />
+    <br />
+
+    <div id="tableContainer">
+      <table id="dataTable" border="1" width="100%">
+        <thead>
+          <tr>
+            <th>Author</th>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Vide</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <script>
+      let allData = [];
+      let currentLetter = null; // Inicialmente nenhuma letra selecionada
+      let currentYear = null; // Inicialmente nenhum ano selecionado
+      let searchTerm = "";
+      let availableYears = []; // Anos disponíveis nos dados
+
+      // Função para carregar o JSON
+      async function loadData() {
+        try {
+          // Tenta diferentes caminhos possíveis
+          const possiblePaths = [
+            "index.json",
+            "./index.json",
+            window.location.pathname.replace(/\/[^/]*$/, "/index.json"),
+            window.location.href.replace(/\/[^/]*$/, "/index.json"),
+          ];
+
+          let response = null;
+          let jsonPath = "";
+          let lastError = null;
+
+          // Tenta cada caminho até encontrar um que funcione
+          for (const path of possiblePaths) {
+            try {
+              jsonPath = path;
+              response = await fetch(path);
+              if (response.ok) {
+                break;
+              }
+            } catch (err) {
+              lastError = err;
+              continue;
+            }
+          }
+
+          if (!response || !response.ok) {
+            const errorMsg = lastError
+              ? lastError.message
+              : `Erro HTTP: ${response?.status || "desconhecido"}`;
+            throw new Error(
+              `Não foi possível carregar o arquivo JSON. ${errorMsg}`
+            );
+          }
+
+          allData = await response.json();
+
+          if (!Array.isArray(allData)) {
+            throw new Error("O arquivo JSON não contém um array válido");
+          }
+
+          if (allData.length === 0) {
+            throw new Error("O arquivo JSON está vazio");
+          }
+
+          // Extrai anos únicos dos dados
+          const yearsSet = new Set();
+          allData.forEach((row) => {
+            const ano = (row.Ano || "").trim();
+            if (ano && ano !== "") {
+              yearsSet.add(ano);
+            }
+          });
+          availableYears = Array.from(yearsSet).sort((a, b) => {
+            const numA = parseInt(a) || 0;
+            const numB = parseInt(b) || 0;
+            return numA - numB;
+          });
+
+          // Cria navegação de anos
+          createYearsNavigation();
+
+          // Inicializa apenas a contagem total, sem exibir dados
+          document.getElementById("totalCount").textContent = allData.length;
+          document.getElementById("displayedCount").textContent = 0;
+        } catch (error) {
+          console.error("Erro ao carregar JSON:", error);
+          const errorMsg = error.message || "Erro desconhecido";
+          const isLocalFile = window.location.protocol === "file:";
+          const additionalInfo = isLocalFile
+            ? "<br><br><strong>Nota:</strong> Se você está testando localmente (file://), você precisa usar um servidor HTTP local. No GitHub Pages isso funcionará normalmente."
+            : "";
+          document.getElementById("tableBody").innerHTML =
+            '<tr><td colspan="4">Erro ao carregar dados: ' +
+            escapeHtml(errorMsg) +
+            additionalInfo +
+            "</td></tr>";
+        }
+      }
+
+      // Função para obter a primeira letra (para agrupamento)
+      function getFirstLetter(text) {
+        if (!text || text.trim() === "") return "?";
+        const firstChar = text.trim().charAt(0).toUpperCase();
+        return /[A-Z]/.test(firstChar) ? firstChar : "?";
+      }
+
+      // Função para criar navegação de anos
+      function createYearsNavigation() {
+        const yearsNav = document.getElementById("yearsNav");
+        yearsNav.innerHTML = "";
+
+        availableYears.forEach((year) => {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = year;
+          link.setAttribute("data-year", year);
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentYear = year;
+            document.querySelectorAll("#yearsNav a").forEach((l) => {
+              l.style.fontWeight = "normal";
+            });
+            link.style.fontWeight = "bold";
+            displayData();
+          });
+
+          yearsNav.appendChild(link);
+        });
+      }
+
+      // Função para filtrar dados
+      function filterData() {
+        // Se não há letra selecionada, não há ano selecionado e não há busca, retorna vazio
+        if (
+          currentLetter === null &&
+          currentYear === null &&
+          searchTerm.trim() === ""
+        ) {
+          return [];
+        }
+
+        let filtered = allData;
+
+        // Filtro por letra
+        if (currentLetter !== null) {
+          filtered = filtered.filter((row) => {
+            const titulo = (row.Titulo || "").trim();
+            const autor = (row.Autor || "").trim();
+            return (
+              getFirstLetter(titulo) === currentLetter ||
+              getFirstLetter(autor) === currentLetter
+            );
+          });
+        }
+
+        // Filtro por ano
+        if (currentYear !== null) {
+          filtered = filtered.filter((row) => {
+            const ano = (row.Ano || "").trim();
+            return ano === currentYear;
+          });
+        }
+
+        // Filtro por busca
+        if (searchTerm.trim() !== "") {
+          const term = searchTerm.toLowerCase();
+          filtered = filtered.filter((row) => {
+            const titulo = (row.Titulo || "").toLowerCase();
+            const autor = (row.Autor || "").toLowerCase();
+            const ano = (row.Ano || "").toString().toLowerCase();
+            return (
+              titulo.includes(term) ||
+              autor.includes(term) ||
+              ano.includes(term)
+            );
+          });
+        }
+
+        return filtered;
+      }
+
+      // Função para exibir dados
+      function displayData() {
+        const filtered = filterData();
+        const tbody = document.getElementById("tableBody");
+
+        tbody.innerHTML = "";
+
+        filtered.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+                    <td>${escapeHtml(row.Autor || "")}</td>
+                    <td>${escapeHtml(row.Titulo || "")}</td>
+                    <td>${escapeHtml(row.Ano || "")}</td>
+                    <td>${escapeHtml(row.Vide || "")}</td>
+                `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById("totalCount").textContent = allData.length;
+        document.getElementById("displayedCount").textContent = filtered.length;
+      }
+
+      // Função para escapar HTML
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Event listeners
+      document.getElementById("searchForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        searchTerm = document.getElementById("searchInput").value;
+        displayData();
+      });
+
+      document.getElementById("clearButton").addEventListener("click", () => {
+        document.getElementById("searchInput").value = "";
+        searchTerm = "";
+        currentLetter = null;
+        currentYear = null;
+        // Remove destaque dos links de letras
+        document.querySelectorAll("#alphabetNav a").forEach((link) => {
+          link.style.fontWeight = "normal";
+        });
+        // Remove destaque dos links de anos
+        document.querySelectorAll("#yearsNav a").forEach((link) => {
+          link.style.fontWeight = "normal";
+        });
+        displayData();
+      });
+
+      document.querySelectorAll("#alphabetNav a").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          currentLetter = link.getAttribute("data-letter");
+          // Remove destaque de todos os links
+          document.querySelectorAll("#alphabetNav a").forEach((l) => {
+            l.style.fontWeight = "normal";
+          });
+          // Destaca o link clicado
+          link.style.fontWeight = "bold";
+          displayData();
+        });
+      });
+
+      // Carrega os dados ao carregar a página
+      loadData();
+    </script>
+  </body>
+</html>
