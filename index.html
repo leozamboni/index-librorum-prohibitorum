@@ -11,20 +11,30 @@
       flex-wrap: wrap;
       gap: 6px;
     }
+    body {
+      text-align: center;
+    }
+    body img {
+      max-width: 90vw;
+    }
+    body table {
+      margin: 0 auto;
+      margin-bottom: 100px;
+    }
   </style>
   <body>
-    <img src="index.png" alt="" srcset="">
+    <img src="index.png" alt="" srcset="" />
     <h1>Index Librorum Prohibitorum</h1>
 
     <form id="searchForm">
       <label for="searchInput">Search:</label>
-      <input type="text" id="searchInput" placeholder="Title, Author or Year" />
-      <button type="submit">Buscar</button>
-      <button type="button" id="clearButton">Limpar</button>
+      <input type="text" id="searchInput" placeholder="Title or Author" />
+      <button type="submit">Search</button>
+      <button type="button" id="clearButton">Clean</button>
     </form>
 
     <div id="info">
-      <p>Total of records: <span id="totalCount">0</span></p>
+      <p>Total of records: <a href="https://github.com/leozamboni/index-librorum-prohibitorum" target="_blank"><span id="totalCount">0</span></a></p>
       <p>Records displayed: <span id="displayedCount">0</span></p>
     </div>
 
@@ -66,19 +76,18 @@
     <br />
     <br />
 
-    <div id="tableContainer">
-      <table id="dataTable" border="1" width="100%">
-        <thead>
-          <tr>
-            <th>Author</th>
-            <th>Title</th>
-            <th>Year</th>
-            <th>Vide</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
+    <table border="1" width="90%">
+      <thead>
+        <tr>
+          <th>Author</th>
+          <th>Title</th>
+          <th>Year</th>
+          <th>Vide</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
 
     <script>
       let allData = [];
@@ -135,6 +144,12 @@
             throw new Error("O arquivo JSON está vazio");
           }
 
+          // Adiciona o índice original a cada item para calcular a linha
+          allData = allData.map((item, index) => ({
+            ...item,
+            _originalIndex: index,
+          }));
+
           // Extrai anos únicos dos dados
           const yearsSet = new Set();
           allData.forEach((row) => {
@@ -163,7 +178,7 @@
             ? "<br><br><strong>Nota:</strong> Se você está testando localmente (file://), você precisa usar um servidor HTTP local. No GitHub Pages isso funcionará normalmente."
             : "";
           document.getElementById("tableBody").innerHTML =
-            '<tr><td colspan="4">Erro ao carregar dados: ' +
+            '<tr><td colspan="5">Erro ao carregar dados: ' +
             escapeHtml(errorMsg) +
             additionalInfo +
             "</td></tr>";
@@ -261,11 +276,21 @@
 
         filtered.forEach((row) => {
           const tr = document.createElement("tr");
+          const originalIndex =
+            row._originalIndex !== undefined
+              ? row._originalIndex
+              : allData.indexOf(row);
+          const issueLink = generateIssueLink(
+            originalIndex,
+            row.Titulo,
+            row.Ano
+          );
           tr.innerHTML = `
                     <td>${escapeHtml(row.Autor || "")}</td>
                     <td>${escapeHtml(row.Titulo || "")}</td>
                     <td>${escapeHtml(row.Ano || "")}</td>
                     <td>${escapeHtml(row.Vide || "")}</td>
+                    <td style="width: 110px"><a href="${issueLink}" target="_blank" rel="noopener noreferrer" title="Report an issue">Report an issue</a></td>
                 `;
           tbody.appendChild(tr);
         });
@@ -279,6 +304,48 @@
         const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
+      }
+
+      // Função para gerar o link da issue do GitHub
+      function generateIssueLink(originalIndex, title, year) {
+        // Cada objeto JSON ocupa 6 linhas:
+        // - Linha de abertura do objeto: `  {`
+        // - 4 linhas de propriedades
+        // - Linha de fechamento: `  },`
+        // Linha 1 é o `[`, então o primeiro objeto começa na linha 2
+        // Estimativa: linha inicial = 2 + (índice * 6)
+        const startLine = 2 + originalIndex * 6;
+        const endLine = startLine + 5; // 6 linhas no total (0-5)
+
+        // URL base do repositório
+        const repoUrl =
+          "https://github.com/leozamboni/index-librorum-prohibitorum";
+        const branch = "main"; // ou "HEAD" para usar a branch atual
+        const filePath = "index.json";
+
+        // Cria o permalink para a linha específica
+        const permalink = `${repoUrl}/blob/${branch}/${filePath}#L${startLine}-L${endLine}`;
+        const encodedPermalink = encodeURIComponent(permalink);
+
+        let issueTitle = (title || "")
+          .trim()
+          .replace(/\n/g, " ")
+          .substring(0, 35);
+        if (title?.length && title?.length > 35) {
+          issueTitle += "...";
+        }
+        const issueYear = (year || "")
+          .trim()
+          .replace(/\n/g, " ")
+          .substring(0, 35);
+        const encodedTitle = encodeURIComponent(
+          "Hello, I found an issue in: " + issueTitle + " (" + year + ")"
+        );
+
+        const issueBody = `link: ${permalink}\ndescription: please, provide a brief description of the problem...`;
+        const encodedBody = encodeURIComponent(issueBody);
+
+        return `${repoUrl}/issues/new?title=${encodedTitle}&body=${encodedBody}`;
       }
 
       // Event listeners
