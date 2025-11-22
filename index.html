@@ -6,14 +6,44 @@
     <title>Index Librorum Prohibitorum</title>
   </head>
   <style>
-    #yearsNav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+    #yearsSelect {
+      cursor: pointer;
     }
     body {
       text-align: center;
       padding: 0px 100px 0px 100px;
+    }
+    #alphabetNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+    #filtersTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #filtersTable td {
+      vertical-align: middle;
+    }
+    #filtersTable input[type="text"] {
+      width: 100%;
+      min-width: 300px;
+      max-width: 400px;
+    }
+    #searchForm {
+      display: inline;
+    }
+    .search-options {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .search-options label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
     }
     .headerImg {
       width: 90vw;
@@ -24,15 +54,68 @@
       max-width: 300px;
       margin-bottom: 50px;
     }
+    .related-documents {
+      margin-top: 50px;
+      text-align: left;
+    }
+    .related-documents h2 {
+      text-align: center;
+    }
+    .related-documents ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+    }
+    @media screen and (max-width: 768px) {
+      .related-documents {
+        padding: 15px;
+        margin: 30px auto;
+      }
+      .related-documents ul {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .related-documents li {
+        min-width: 100%;
+        max-width: 100%;
+      }
+    }
+    #info {
+      text-align: left;
+      margin: 5px auto;
+      width: 90%;
+      max-width: 1200px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #info p {
+      margin: 0;
+    }
     body table {
       margin: 0 auto;
-      margin-bottom: 50px;
       width: 90%;
       border-collapse: collapse;
+      max-width: 1200px;
     }
 
     body table tr {
       background-color: #f9f9f9;
+    }
+    fieldset {
+      margin: 20px auto;
+      max-width: 800px;
+      background-color: white !important;
+      text-align: left;
+    }
+    fieldset tr {
+      background-color: white !important;
+    }
+    fieldset td {
+      padding: 5px;
     }
 
     /* Responsive table styles for mobile */
@@ -44,7 +127,6 @@
       body table {
         width: 100%;
         border: 0;
-        margin-bottom: 50px;
       }
 
       body table thead {
@@ -112,85 +194,160 @@
         word-break: break-word;
       }
 
-      #searchForm {
+      #filtersTable {
+        display: block;
+      }
+      #filtersTable tr {
+        display: block;
+        margin-bottom: 0px;
+        border: none;
+        padding: 0px;
+      }
+      #filtersTable td {
+        display: block;
+        padding: 5px 0;
+      }
+      #filtersTable input[type="text"] {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .letter-filter-options {
         display: flex;
-        flex-direction: column;
-        gap: 10px;
+        gap: 15px;
         align-items: center;
+        justify-content: flex-start;
+        margin: 15px 0;
       }
 
-      #searchForm input {
-        width: 90%;
-        max-width: 300px;
+      .letter-filter-options label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
       }
 
-      #alphabetNav,
-      #yearsNav {
+      #alphabetNav {
         justify-content: center;
       }
     }
   </style>
   <body>
-    <img class="headerImg" src="index.png" alt="" srcset="" />
-    <h1>Index Librorum Prohibitorum</h1>
+    <!-- <img class="headerImg" src="index.png" alt="" srcset="" /> -->
+    <h1>INDEX LIBRORUM PROHIBITORUM</h1>
 
-    <form id="searchForm">
-      <label for="searchInput">Search:</label>
-      <input type="text" id="searchInput" placeholder="Title or Author" />
-      <button type="submit">Search</button>
-      <button type="button" id="clearButton">Clean</button>
-    </form>
+    <fieldset>
+      <legend>Filters</legend>
+      <table id="filtersTable" style="width: 100%; border-collapse: collapse">
+        <tr>
+          <td>
+            <label for="searchInput">Search:</label>
+            <input type="text" id="searchInput" placeholder="Title or Author" />
+          </td>
+          <td>
+            <div class="search-options">
+              <label
+                ><input type="checkbox" id="searchByAuthor" checked />
+                Author</label
+              >
+              <label
+                ><input type="checkbox" id="searchByTitle" checked />
+                Title</label
+              >
+            </div>
+          </td>
+          <td style="text-align: right">
+            <form id="searchForm" style="display: inline">
+              <button type="submit">Search</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <label for="yearsSelect">Filter by Year:</label>
+            <select id="yearsSelect">
+              <option value="">All Years</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <div class="letter-filter-options">
+              <label>Filter by letter:</label>
+              <label
+                ><input
+                  type="radio"
+                  name="filterLetterBy"
+                  id="filterLetterByAuthor"
+                  value="author"
+                  checked
+                />
+                Author</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="filterLetterBy"
+                  id="filterLetterByTitle"
+                  value="title"
+                />
+                Title</label
+              >
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <div id="alphabetNav">
+              <a href="#" data-letter="A">A</a>
+              <a href="#" data-letter="B">B</a>
+              <a href="#" data-letter="C">C</a>
+              <a href="#" data-letter="D">D</a>
+              <a href="#" data-letter="E">E</a>
+              <a href="#" data-letter="F">F</a>
+              <a href="#" data-letter="G">G</a>
+              <a href="#" data-letter="H">H</a>
+              <a href="#" data-letter="I">I</a>
+              <a href="#" data-letter="J">J</a>
+              <a href="#" data-letter="K">K</a>
+              <a href="#" data-letter="L">L</a>
+              <a href="#" data-letter="M">M</a>
+              <a href="#" data-letter="N">N</a>
+              <a href="#" data-letter="O">O</a>
+              <a href="#" data-letter="P">P</a>
+              <a href="#" data-letter="Q">Q</a>
+              <a href="#" data-letter="R">R</a>
+              <a href="#" data-letter="S">S</a>
+              <a href="#" data-letter="T">T</a>
+              <a href="#" data-letter="U">U</a>
+              <a href="#" data-letter="V">V</a>
+              <a href="#" data-letter="W">W</a>
+              <a href="#" data-letter="X">X</a>
+              <a href="#" data-letter="Y">Y</a>
+              <a href="#" data-letter="Z">Z</a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3" style="text-align: right">
+            <button type="button" id="clearButton">Clean filters</button>
+          </td>
+        </tr>
+      </table>
+    </fieldset>
 
     <div id="info">
-      <p>
-        Total of records:
+      <span
+        >Total of records:
         <a
           href="https://github.com/leozamboni/index-librorum-prohibitorum"
           target="_blank"
           ><span id="totalCount">0</span></a
-        >
-      </p>
-      <p>Records displayed: <span id="displayedCount">0</span></p>
+        ></span
+      >
+      <span> Records displayed: <span id="displayedCount">0</span> </span>
+      <span id="activeFilters" style="color: #666; font-style: italic"></span>
     </div>
-
-    <div>
-      <div id="alphabetNav">
-        <a href="#" data-letter="A">A</a>
-        <a href="#" data-letter="B">B</a>
-        <a href="#" data-letter="C">C</a>
-        <a href="#" data-letter="D">D</a>
-        <a href="#" data-letter="E">E</a>
-        <a href="#" data-letter="F">F</a>
-        <a href="#" data-letter="G">G</a>
-        <a href="#" data-letter="H">H</a>
-        <a href="#" data-letter="I">I</a>
-        <a href="#" data-letter="J">J</a>
-        <a href="#" data-letter="K">K</a>
-        <a href="#" data-letter="L">L</a>
-        <a href="#" data-letter="M">M</a>
-        <a href="#" data-letter="N">N</a>
-        <a href="#" data-letter="O">O</a>
-        <a href="#" data-letter="P">P</a>
-        <a href="#" data-letter="Q">Q</a>
-        <a href="#" data-letter="R">R</a>
-        <a href="#" data-letter="S">S</a>
-        <a href="#" data-letter="T">T</a>
-        <a href="#" data-letter="U">U</a>
-        <a href="#" data-letter="V">V</a>
-        <a href="#" data-letter="W">W</a>
-        <a href="#" data-letter="X">X</a>
-        <a href="#" data-letter="Y">Y</a>
-        <a href="#" data-letter="Z">Z</a>
-      </div>
-    </div>
-    <br />
-    <br />
-    <div>
-      <div id="yearsNav"></div>
-    </div>
-    <br />
-    <br />
-
     <table border="1" width="90%">
       <thead>
         <tr>
@@ -204,6 +361,11 @@
       <tbody id="tableBody"></tbody>
     </table>
 
+    <div class="related-documents">
+      <h2>PONTIFICAL DOCUMENTS</h2>
+      <ul id="relatedDocumentsList"></ul>
+    </div>
+
     <img class="btmImg" src="bottom.png" alt="" />
     <script>
       let allData = [];
@@ -212,6 +374,137 @@
       let currentAuthor = null; // Inicialmente nenhum autor selecionado
       let searchTerm = "";
       let availableYears = []; // Anos disponíveis nos dados
+
+      // Opções de busca e filtro
+      let searchByAuthor = true;
+      let searchByTitle = true;
+      let filterLetterBy = "author"; // "author" ou "title"
+
+      // Funções para gerenciar filtros na URL
+      function updateURL() {
+        const params = new URLSearchParams();
+        
+        if (currentLetter !== null) {
+          params.set("letter", currentLetter);
+        }
+        if (currentYear !== null) {
+          params.set("year", currentYear);
+        }
+        if (currentAuthor !== null) {
+          params.set("author", currentAuthor);
+        }
+        if (searchTerm.trim() !== "") {
+          params.set("search", searchTerm.trim());
+        }
+        if (filterLetterBy !== "author") {
+          params.set("letterBy", filterLetterBy);
+        }
+        
+        const newURL = params.toString() 
+          ? `${window.location.pathname}?${params.toString()}`
+          : window.location.pathname;
+        
+        window.history.pushState({}, "", newURL);
+      }
+
+      function readURLParams() {
+        const params = new URLSearchParams(window.location.search);
+        
+        const letter = params.get("letter");
+        if (letter) {
+          currentLetter = letter;
+        }
+        
+        const year = params.get("year");
+        if (year) {
+          currentYear = year;
+        }
+        
+        const author = params.get("author");
+        if (author) {
+          currentAuthor = decodeURIComponent(author);
+        }
+        
+        const search = params.get("search");
+        if (search) {
+          searchTerm = decodeURIComponent(search);
+          document.getElementById("searchInput").value = searchTerm;
+        }
+        
+        const letterBy = params.get("letterBy");
+        if (letterBy && (letterBy === "title" || letterBy === "author")) {
+          filterLetterBy = letterBy;
+          // Atualiza o radio button correspondente
+          const radioButton = document.getElementById(`filterLetterBy${letterBy.charAt(0).toUpperCase() + letterBy.slice(1)}`);
+          if (radioButton) {
+            radioButton.checked = true;
+          }
+        }
+        
+        // Atualiza a UI baseada nos parâmetros
+        if (currentLetter) {
+          document.querySelectorAll("#alphabetNav a").forEach((link) => {
+            if (link.getAttribute("data-letter") === currentLetter) {
+              link.style.fontWeight = "bold";
+            } else {
+              link.style.fontWeight = "normal";
+            }
+          });
+        }
+        
+        if (currentYear) {
+          document.getElementById("yearsSelect").value = currentYear;
+        }
+      }
+
+      // Documentos relacionados (ano, papa, título, link)
+      const relatedDocuments = [
+        {
+          year: "1515",
+          pope: "LEO X",
+          title: "INTER SOLLICITUDINES",
+          link: "https://it.wikipedia.org/wiki/Inter_Sollicitudines",
+        },
+        {
+          year: "1753",
+          pope: "BENEDICTUS XIV",
+          title: "SOLLICITA AC PROVIDA",
+          link: "https://la.wikisource.org/wiki/Sollicita_ac_provida?utm_source=chatgpt.com",
+        },
+        {
+          year: "1897",
+          pope: "LEO XIII",
+          title: "OFFICIORUM AC MUNERUM",
+          link: "https://www.vatican.va/content/leo-xiii/en/apost_constitutions/documents/hf_l-xiii_apc_18970125_officiorum-ac-munerum.html",
+        },
+        // Adicione mais documentos aqui seguindo o mesmo formato
+      ];
+
+      // Função para renderizar documentos relacionados
+      function renderRelatedDocuments() {
+        const list = document.getElementById("relatedDocumentsList");
+        if (!list) return;
+
+        list.innerHTML = "";
+
+        if (relatedDocuments.length === 0) {
+          list.innerHTML = "<li>No related documents available.</li>";
+          return;
+        }
+
+        relatedDocuments.forEach((doc) => {
+          const li = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = doc.link;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent =
+            doc.title + " - " + doc.pope + " (" + doc.year + ") ";
+
+          li.appendChild(link);
+          list.appendChild(li);
+        });
+      }
 
       // Função para carregar o JSON
       async function loadData() {
@@ -284,9 +577,15 @@
           // Cria navegação de anos
           createYearsNavigation();
 
+          // Lê os filtros da URL após criar a navegação
+          readURLParams();
+
           // Inicializa apenas a contagem total, sem exibir dados
           document.getElementById("totalCount").textContent = allData.length;
           document.getElementById("displayedCount").textContent = 0;
+
+          // Exibe a mensagem inicial pedindo para selecionar um filtro ou aplica os filtros da URL
+          displayData();
         } catch (error) {
           console.error("Erro ao carregar JSON:", error);
           const errorMsg = error.message || "Erro desconhecido";
@@ -311,27 +610,41 @@
 
       // Função para criar navegação de anos
       function createYearsNavigation() {
-        const yearsNav = document.getElementById("yearsNav");
-        yearsNav.innerHTML = "";
+        const yearsSelect = document.getElementById("yearsSelect");
+
+        // Limpa as opções existentes (exceto "All Years")
+        while (yearsSelect.children.length > 1) {
+          yearsSelect.removeChild(yearsSelect.lastChild);
+        }
 
         availableYears.forEach((year) => {
-          const link = document.createElement("a");
-          link.href = "#";
-          link.textContent = year;
-          link.setAttribute("data-year", year);
-          link.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentYear = year;
-            currentAuthor = null; // Reseta o filtro de autor
-            document.querySelectorAll("#yearsNav a").forEach((l) => {
-              l.style.fontWeight = "normal";
-            });
-            link.style.fontWeight = "bold";
-            displayData();
-          });
-
-          yearsNav.appendChild(link);
+          const option = document.createElement("option");
+          option.value = year;
+          option.textContent = year;
+          yearsSelect.appendChild(option);
         });
+      }
+
+      // Função para gerar descrição dos filtros ativos
+      function getActiveFiltersDescription() {
+        const filters = [];
+
+        if (currentAuthor !== null) {
+          filters.push(`Author: ${currentAuthor}`);
+        }
+        if (currentLetter !== null) {
+          const filterType =
+            filterLetterBy === "title" ? "Title letter" : "Author letter";
+          filters.push(`${filterType}: ${currentLetter}`);
+        }
+        if (currentYear !== null) {
+          filters.push(`Year: ${currentYear}`);
+        }
+        if (searchTerm.trim() !== "") {
+          filters.push(`Search: "${searchTerm}"`);
+        }
+
+        return filters.length > 0 ? `(${filters.join(", ")})` : "";
       }
 
       // Função para filtrar dados
@@ -352,7 +665,8 @@
         if (currentAuthor !== null) {
           filtered = filtered.filter((row) => {
             const autor = (row.Autor || "").trim();
-            return autor === currentAuthor;
+            // Busca parcial para encontrar o autor mesmo quando ele aparece junto com outros
+            return autor.includes(currentAuthor);
           });
         }
 
@@ -361,10 +675,12 @@
           filtered = filtered.filter((row) => {
             const titulo = (row.Titulo || "").trim();
             const autor = (row.Autor || "").trim();
-            return (
-              getFirstLetter(titulo) === currentLetter ||
-              getFirstLetter(autor) === currentLetter
-            );
+
+            if (filterLetterBy === "title") {
+              return getFirstLetter(titulo) === currentLetter;
+            } else {
+              return getFirstLetter(autor) === currentLetter;
+            }
           });
         }
 
@@ -383,11 +699,20 @@
             const titulo = (row.Titulo || "").toLowerCase();
             const autor = (row.Autor || "").toLowerCase();
             const ano = (row.Ano || "").toString().toLowerCase();
-            return (
-              titulo.includes(term) ||
-              autor.includes(term) ||
-              ano.includes(term)
-            );
+            let matches = false;
+
+            if (searchByTitle && titulo.includes(term)) {
+              matches = true;
+            }
+            if (searchByAuthor && autor.includes(term)) {
+              matches = true;
+            }
+            // Ano sempre é pesquisado
+            if (ano.includes(term)) {
+              matches = true;
+            }
+
+            return matches;
           });
         }
 
@@ -396,10 +721,49 @@
 
       // Função para exibir dados
       function displayData() {
-        const filtered = filterData();
         const tbody = document.getElementById("tableBody");
 
         tbody.innerHTML = "";
+
+        // Verifica se não há filtros ou busca ativos
+        const hasNoFilters =
+          currentLetter === null &&
+          currentYear === null &&
+          currentAuthor === null &&
+          searchTerm.trim() === "";
+
+        // Se não há filtros ativos, exibe mensagem pedindo para selecionar algum
+        if (hasNoFilters) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+                    <td colspan="5" style="text-align: center; padding: 40px; font-size: 1.2em; color: #666;">
+                      Please select a filter or enter a search term to view results.
+                    </td>
+                `;
+          tbody.appendChild(tr);
+          document.getElementById("totalCount").textContent = allData.length;
+          document.getElementById("displayedCount").textContent = 0;
+          document.getElementById("activeFilters").textContent = "";
+          return;
+        }
+
+        const filtered = filterData();
+
+        // Se há filtros mas não há itens filtrados, exibe mensagem
+        if (filtered.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+           <td colspan="5" style="text-align: center; padding: 40px; font-size: 1.2em; color: #666;">
+                       No items found with the selected filters.
+                    </td>
+                `;
+          tbody.appendChild(tr);
+          document.getElementById("totalCount").textContent = allData.length;
+          document.getElementById("displayedCount").textContent = 0;
+          document.getElementById("activeFilters").textContent =
+            getActiveFiltersDescription();
+          return;
+        }
 
         filtered.forEach((row) => {
           const tr = document.createElement("tr");
@@ -415,13 +779,30 @@
 
           // Cria link para o autor se houver autor
           const autor = (row.Autor || "").trim();
-          const autorCell = autor
-            ? `<a href="#" class="author-link" data-author="${escapeHtml(
+          let autorCell = "";
+          if (autor) {
+            // Separa os autores por ponto e vírgula ou vírgula
+            const autores = autor.split(/[;,]/).map(a => a.trim()).filter(a => a !== "");
+            if (autores.length > 1) {
+              // Múltiplos autores - cria um link para cada um
+              autorCell = autores.map(a => 
+                `<a href="#" class="author-link" data-author="${escapeHtml(
+                  a
+                )}" title="Show all books by this author">${escapeHtml(
+                  a
+                )}</a>`
+              ).join(", ");
+            } else {
+              // Um único autor
+              autorCell = `<a href="#" class="author-link" data-author="${escapeHtml(
                 autor
               )}" title="Show all books by this author">${escapeHtml(
                 autor
-              )}</a>`
-            : escapeHtml(autor);
+              )}</a>`;
+            }
+          } else {
+            autorCell = escapeHtml(autor);
+          }
 
           tr.innerHTML = `
                     <td data-label="Author">${autorCell}</td>
@@ -447,17 +828,19 @@
             document.querySelectorAll("#alphabetNav a").forEach((l) => {
               l.style.fontWeight = "normal";
             });
-            document.querySelectorAll("#yearsNav a").forEach((l) => {
-              l.style.fontWeight = "normal";
-            });
+            // Reseta o select de anos
+            document.getElementById("yearsSelect").value = "";
             // Define o autor atual
             currentAuthor = author;
+            updateURL();
             displayData();
           });
         });
 
         document.getElementById("totalCount").textContent = allData.length;
         document.getElementById("displayedCount").textContent = filtered.length;
+        document.getElementById("activeFilters").textContent =
+          getActiveFiltersDescription();
       }
 
       // Função para escapar HTML
@@ -513,8 +896,53 @@
       document.getElementById("searchForm").addEventListener("submit", (e) => {
         e.preventDefault();
         searchTerm = document.getElementById("searchInput").value;
+        // Limpa outros filtros quando uma busca é realizada
+        currentLetter = null;
+        currentYear = null;
+        currentAuthor = null;
+        // Remove destaque dos links de letras
+        document.querySelectorAll("#alphabetNav a").forEach((link) => {
+          link.style.fontWeight = "normal";
+        });
+        // Reseta o select de anos
+        document.getElementById("yearsSelect").value = "";
+        updateURL();
         displayData();
       });
+
+      // Event listeners para checkboxes de busca
+      document
+        .getElementById("searchByAuthor")
+        .addEventListener("change", (e) => {
+          searchByAuthor = e.target.checked;
+          if (searchTerm.trim() !== "") {
+            displayData();
+          }
+        });
+
+      document
+        .getElementById("searchByTitle")
+        .addEventListener("change", (e) => {
+          searchByTitle = e.target.checked;
+          if (searchTerm.trim() !== "") {
+            displayData();
+          }
+        });
+
+      // Event listeners para radio buttons de filtro por letra
+      document
+        .querySelectorAll('input[name="filterLetterBy"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            if (e.target.checked) {
+              filterLetterBy = e.target.value;
+              if (currentLetter !== null) {
+                updateURL();
+                displayData();
+              }
+            }
+          });
+        });
 
       document.getElementById("clearButton").addEventListener("click", () => {
         document.getElementById("searchInput").value = "";
@@ -526,10 +954,30 @@
         document.querySelectorAll("#alphabetNav a").forEach((link) => {
           link.style.fontWeight = "normal";
         });
-        // Remove destaque dos links de anos
-        document.querySelectorAll("#yearsNav a").forEach((link) => {
-          link.style.fontWeight = "normal";
-        });
+        // Reseta o select de anos
+        document.getElementById("yearsSelect").value = "";
+        updateURL();
+        displayData();
+      });
+
+      // Event listener para o select de anos
+      document.getElementById("yearsSelect").addEventListener("change", (e) => {
+        const selectedYear = e.target.value;
+        if (selectedYear === "") {
+          currentYear = null;
+        } else {
+          currentYear = selectedYear;
+          // Limpa outros filtros quando um ano é selecionado
+          currentAuthor = null;
+          currentLetter = null;
+          searchTerm = "";
+          document.getElementById("searchInput").value = "";
+          // Remove destaque dos links de letras
+          document.querySelectorAll("#alphabetNav a").forEach((l) => {
+            l.style.fontWeight = "normal";
+          });
+        }
+        updateURL();
         displayData();
       });
 
@@ -537,19 +985,27 @@
         link.addEventListener("click", (e) => {
           e.preventDefault();
           currentLetter = link.getAttribute("data-letter");
-          currentAuthor = null; // Reseta o filtro de autor
-          // Remove destaque de todos os links
+          // Limpa outros filtros quando uma letra é selecionada
+          currentAuthor = null;
+          currentYear = null;
+          searchTerm = "";
+          document.getElementById("searchInput").value = "";
+          // Remove destaque de todos os links de letras
           document.querySelectorAll("#alphabetNav a").forEach((l) => {
             l.style.fontWeight = "normal";
           });
+          // Reseta o select de anos
+          document.getElementById("yearsSelect").value = "";
           // Destaca o link clicado
           link.style.fontWeight = "bold";
+          updateURL();
           displayData();
         });
       });
 
       // Carrega os dados ao carregar a página
       loadData();
+      renderRelatedDocuments();
     </script>
   </body>
 </html>
