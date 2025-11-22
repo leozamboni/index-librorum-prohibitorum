@@ -13,17 +13,125 @@
     }
     body {
       text-align: center;
+      padding: 0px 100px 0px 100px;
     }
-    body img {
-      max-width: 90vw;
+    .headerImg {
+      width: 90vw;
+      max-width: 500px;
+    }
+    .btmImg {
+      width: 60vw;
+      max-width: 300px;
+      margin-bottom: 50px;
     }
     body table {
       margin: 0 auto;
-      margin-bottom: 100px;
+      margin-bottom: 50px;
+      width: 90%;
+      border-collapse: collapse;
+    }
+
+    body table tr {
+      background-color: #f9f9f9;
+    }
+
+    /* Responsive table styles for mobile */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      body table {
+        width: 100%;
+        border: 0;
+        margin-bottom: 50px;
+      }
+
+      body table thead {
+        display: none;
+      }
+
+      body table tbody {
+        display: block;
+        width: 100%;
+      }
+
+      body table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        padding: 12px;
+      }
+
+      body table td {
+        display: block;
+        text-align: left;
+        border: none;
+        padding: 8px 0;
+        position: relative;
+        padding-left: 35%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      body table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 30%;
+        font-weight: bold;
+        text-align: left;
+      }
+
+      body table td[data-label="Author"]:before {
+        content: "Author: ";
+      }
+      body table td[data-label="Title"]:before {
+        content: "Title: ";
+      }
+      body table td[data-label="Year"]:before {
+        content: "Year: ";
+      }
+      body table td[data-label="Vide"]:before {
+        content: "Vide: ";
+      }
+      body table td[data-label=""]:before {
+        content: "";
+      }
+
+      body table td[data-label=""] {
+        padding-left: 0;
+        text-align: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+      }
+
+      .author-link {
+        display: inline-block;
+        word-break: break-word;
+      }
+
+      #searchForm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+
+      #searchForm input {
+        width: 90%;
+        max-width: 300px;
+      }
+
+      #alphabetNav,
+      #yearsNav {
+        justify-content: center;
+      }
     }
   </style>
   <body>
-    <img src="index.png" alt="" srcset="" />
+    <img class="headerImg" src="index.png" alt="" srcset="" />
     <h1>Index Librorum Prohibitorum</h1>
 
     <form id="searchForm">
@@ -34,7 +142,14 @@
     </form>
 
     <div id="info">
-      <p>Total of records: <a href="https://github.com/leozamboni/index-librorum-prohibitorum" target="_blank"><span id="totalCount">0</span></a></p>
+      <p>
+        Total of records:
+        <a
+          href="https://github.com/leozamboni/index-librorum-prohibitorum"
+          target="_blank"
+          ><span id="totalCount">0</span></a
+        >
+      </p>
       <p>Records displayed: <span id="displayedCount">0</span></p>
     </div>
 
@@ -89,10 +204,12 @@
       <tbody id="tableBody"></tbody>
     </table>
 
+    <img class="btmImg" src="bottom.png" alt="" />
     <script>
       let allData = [];
       let currentLetter = null; // Inicialmente nenhuma letra selecionada
       let currentYear = null; // Inicialmente nenhum ano selecionado
+      let currentAuthor = null; // Inicialmente nenhum autor selecionado
       let searchTerm = "";
       let availableYears = []; // Anos disponíveis nos dados
 
@@ -205,6 +322,7 @@
           link.addEventListener("click", (e) => {
             e.preventDefault();
             currentYear = year;
+            currentAuthor = null; // Reseta o filtro de autor
             document.querySelectorAll("#yearsNav a").forEach((l) => {
               l.style.fontWeight = "normal";
             });
@@ -218,16 +336,25 @@
 
       // Função para filtrar dados
       function filterData() {
-        // Se não há letra selecionada, não há ano selecionado e não há busca, retorna vazio
+        // Se não há letra selecionada, não há ano selecionado, não há autor selecionado e não há busca, retorna vazio
         if (
           currentLetter === null &&
           currentYear === null &&
+          currentAuthor === null &&
           searchTerm.trim() === ""
         ) {
           return [];
         }
 
         let filtered = allData;
+
+        // Filtro por autor (tem prioridade sobre outros filtros)
+        if (currentAuthor !== null) {
+          filtered = filtered.filter((row) => {
+            const autor = (row.Autor || "").trim();
+            return autor === currentAuthor;
+          });
+        }
 
         // Filtro por letra
         if (currentLetter !== null) {
@@ -285,14 +412,48 @@
             row.Titulo,
             row.Ano
           );
+
+          // Cria link para o autor se houver autor
+          const autor = (row.Autor || "").trim();
+          const autorCell = autor
+            ? `<a href="#" class="author-link" data-author="${escapeHtml(
+                autor
+              )}" title="Show all books by this author">${escapeHtml(
+                autor
+              )}</a>`
+            : escapeHtml(autor);
+
           tr.innerHTML = `
-                    <td>${escapeHtml(row.Autor || "")}</td>
-                    <td>${escapeHtml(row.Titulo || "")}</td>
-                    <td>${escapeHtml(row.Ano || "")}</td>
-                    <td>${escapeHtml(row.Vide || "")}</td>
-                    <td style="width: 110px"><a href="${issueLink}" target="_blank" rel="noopener noreferrer" title="Report an issue">Report an issue</a></td>
+                    <td data-label="Author">${autorCell}</td>
+                    <td data-label="Title">${escapeHtml(row.Titulo || "")}</td>
+                    <td data-label="Year">${escapeHtml(row.Ano || "")}</td>
+                    <td data-label="Vide">${escapeHtml(row.Vide || "")}</td>
+                    <td data-label="" style="width: 110px"><a href="${issueLink}" target="_blank" rel="noopener noreferrer" title="Report an issue">Report an issue</a></td>
                 `;
           tbody.appendChild(tr);
+        });
+
+        // Adiciona event listeners aos links de autor
+        document.querySelectorAll(".author-link").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const author = link.getAttribute("data-author");
+            // Limpa outros filtros
+            currentLetter = null;
+            currentYear = null;
+            searchTerm = "";
+            document.getElementById("searchInput").value = "";
+            // Remove destaque dos links de letras e anos
+            document.querySelectorAll("#alphabetNav a").forEach((l) => {
+              l.style.fontWeight = "normal";
+            });
+            document.querySelectorAll("#yearsNav a").forEach((l) => {
+              l.style.fontWeight = "normal";
+            });
+            // Define o autor atual
+            currentAuthor = author;
+            displayData();
+          });
         });
 
         document.getElementById("totalCount").textContent = allData.length;
@@ -360,6 +521,7 @@
         searchTerm = "";
         currentLetter = null;
         currentYear = null;
+        currentAuthor = null;
         // Remove destaque dos links de letras
         document.querySelectorAll("#alphabetNav a").forEach((link) => {
           link.style.fontWeight = "normal";
@@ -375,6 +537,7 @@
         link.addEventListener("click", (e) => {
           e.preventDefault();
           currentLetter = link.getAttribute("data-letter");
+          currentAuthor = null; // Reseta o filtro de autor
           // Remove destaque de todos os links
           document.querySelectorAll("#alphabetNav a").forEach((l) => {
             l.style.fontWeight = "normal";
